@@ -35,29 +35,50 @@ class createWindow:
         nextButton = Button(self.mainView, text='next', command=self.next)
         nextButton.place(relx=0.55, rely=0.95, anchor='center')
     
-    def prev(self, *args):
-        self.imageIndex -= 1
-        print(self.imageIndex)
-    def next(self, *args):
-        self.imageIndex += 1
-        print(self.imageIndex)
 
-    def drawImage(self, *args):
+    def prev(self, *args):
+        if self.imageIndex > 0:
+            self.imageIndex -= 1
+        elif self.imageIndex == 0:
+            self.imageIndex = self.imageMaxCount
+        else:
+            self.imageIndex = 0
+        self.imageLabel.config(image=self.image[self.imageIndex])
+        self.imageLabel.image = self.image[self.imageIndex]
+
+
+    def next(self, *args):
+        if self.imageIndex < self.imageMaxCount-1:
+            self.imageIndex += 1
+        elif self.imageIndex == self.imageMaxCount-1:
+            self.imageIndex = 0
+        else:
+            self.imageIndex = 0
+        self.imageLabel.config(image=self.image[self.imageIndex])
+        self.imageLabel.image = self.image[self.imageIndex]
+
+
+    def imageWindow(self, *args):
         # create the frame for the image to sit in
-        imageFrame = Frame(self.mainView, width=300, height=300)
-        imageFrame.place(relx=0.5, rely=0.5, anchor='center')
-        #imageFrame.pack()
+        self.imageFrame = Frame(self.mainView, width=300, height=300)
+        self.imageFrame.place(relx=0.5, rely=0.5, anchor='center')
         # load the image
-        image = Image.open(self.imagePath[self.imageIndex])
-        # convert the image to a TK compatiable image
-        test = ImageTk.PhotoImage(image.resize((500,500)))
-        imageLabel = Label(imageFrame, image=test)#, background='blue')
-        imageLabel.image = test
-        imageLabel.place(relx=0.5, rely=0.5, anchor='center')
-        imageLabel.pack()
+        self.image = []
+        for i in range(len(self.imagePath)):
+            imageOpen = Image.open(self.imagePath[i])
+            self.image.append(ImageTk.PhotoImage(imageOpen.resize((500,500))))
+        self.drawImage()
+
+    
+    def drawImage(self, *args):
+        self.imageLabel = Label(self.imageFrame, image=self.image[0])#, background='blue')
+        self.imageLabel.image = self.image[0]
+        self.imageLabel.place(relx=0.5, rely=0.5, anchor='center')
+        self.imageLabel.pack()
         
 
     def browseFolder(self, *args):
+        # Ask user for file path, then grab all ".png"/".jpg" extensions and place into an array
         fileName = filedialog.askdirectory()
         self.folderPath.set(fileName)
         self.imageName = []
@@ -65,11 +86,12 @@ class createWindow:
         print(f'\nUser Selected Folder: {fileName}')
         for root, dirs, files in os.walk(fileName, topdown=False):
             for name in files:
-                if name.__contains__('.png'):
+                if name.__contains__('.png') or name.__contains__('.jpg'):
                     self.imagePath.append(f'{root}/{name}')
                     self.imageName.append(name)
-        
-        self.drawImage()
+        self.imageMaxCount = len(self.imagePath)
+        self.imageIndex = 0
+        self.imageWindow()
 
     
     def confrim(self, *args):
