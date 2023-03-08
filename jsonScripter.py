@@ -17,6 +17,9 @@ class createWindow:
         self.imageIndex = 0
         self.mainView = main
         self.drawMain()
+        self.box = None
+        self.highlight = None
+        self.prevX = 0
         self.folderPath = StringVar()
         
     def drawMain(self, *args):
@@ -44,8 +47,6 @@ class createWindow:
         else:
             self.imageIndex = 0
         self.canvas.itemconfig(self.imageContainer, image=self.image[self.imageIndex])
-        #self.imageLabel.config(image=self.image[self.imageIndex])
-        #self.imageLabel.image = self.image[self.imageIndex]
 
 
     def next(self, *args):
@@ -56,8 +57,6 @@ class createWindow:
         else:
             self.imageIndex = 0
         self.canvas.itemconfig(self.imageContainer, image=self.image[self.imageIndex])
-        #self.imageLabel.config(image=self.image[self.imageIndex])
-        #self.imageLabel.image = self.image[self.imageIndex]
 
 
     def imageWindow(self, *args):
@@ -70,39 +69,38 @@ class createWindow:
             imageOpen = Image.open(self.imagePath[i])
             self.image.append(ImageTk.PhotoImage(imageOpen.resize((500,500))))
         self.drawImage()
-        #self.imageLabel.bind("<Button-1>", self.onClick)
         self.canvas.bind("<Button-1>", self.onClick)
-
 
     
     def drawImage(self, *args):
          # Create a canvas to host the rect
         self.canvas = Canvas(width=500, height=500, background='blue')
         self.imageContainer = self.canvas.create_image(253,253,anchor='center', image=self.image[0])
-        #self.canvas.bind("<Button-1>", self.onClick)
         self.canvas.place(relx=0.5, rely=0.5, anchor='center')
         self.canvas.pack()
-        #self.imageLabel = Label(self.canvas, image=self.image[0])#, background='blue')
-        #self.imageLabel.image = self.image[0]
-        #self.imageLabel.place(relx=0.5, rely=0.5, anchor='center')
-        #self.imageLabel.pack()
+        self.highlight = self.canvas.create_rectangle(0,0,0,0, width=2 , outline='red')
 
     
-
     # Two functions below handle mouse events
     def onClick(self, event):
         global lastx, lasty
         lastx, lasty = event.x, event.y
+        self.canvas.delete(self.box)
         self.canvas.bind("<B1-Motion>", self.dragEvent)
         print('clicked')
-        #self.canvas.bind("<B1-Motion>", self.dragEvent)
 
 
     def dragEvent(self, event):
-        self.box = self.canvas.create_rectangle(lastx, lasty, event.x, event.y, width=3)
-        
-        print('Cursor Pos: %d, %d' %(event.x, event.y))
+        global endx, endy
+        endx, endy = event.x, event.y
+        self.canvas.coords(self.highlight, lastx, lasty, event.x, event.y)
+        #self.canvas.delete(self.highlight)
+        self.canvas.bind("<ButtonRelease-1>", self.onRelease)
 
+
+    def onRelease(self, event):
+        self.box = self.canvas.create_rectangle(lastx, lasty, endx, endy, width=3, outline='blue')  
+        print(f'Released! x: {endx}, y: {endy}')
 
     def browseFolder(self, *args):
         # Ask user for file path, then grab all ".png"/".jpg" extensions and place into an array
@@ -122,7 +120,7 @@ class createWindow:
 
     
     def confrim(self, *args):
-        #self.canvas.delete(self.box)
+        self.canvas.delete(self.box)
         print('confirmed!')
 
             
