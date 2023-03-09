@@ -1,3 +1,4 @@
+import io
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
@@ -6,6 +7,7 @@ from PIL import ImageTk, Image
 import numpy as np
 import json as js
 import os
+
 
 
 class createWindow:
@@ -18,8 +20,8 @@ class createWindow:
         self.mainView = main
         self.drawMain()
         self.box = None
-        self.highlight = None
         self.prevX = 0
+        self.savedAnnots = {}
         self.folderPath = StringVar()
         
     def drawMain(self, *args):
@@ -27,7 +29,7 @@ class createWindow:
         textLabel = Label(self.mainView, text=title, font=('Calibri', 20))
         testButton = Button(self.mainView, text='confirm', command=self.confrim)
         # button placement, x=0 y=0-> top left, x=1,y=1 -> bottom right
-        testButton.place(relx=0.90, rely=0.95, anchor='center')
+        testButton.place(relx=0.9, rely=0.95, anchor='center')
         textLabel.place(relx=0.1, rely=0.95, anchor='center')
         textLabel.pack()
         # this button calls the browseFolder plugin
@@ -37,6 +39,8 @@ class createWindow:
         prevButton.place(relx=0.45, rely=0.95, anchor='center')
         nextButton = Button(self.mainView, text='next', command=self.next)
         nextButton.place(relx=0.55, rely=0.95, anchor='center')
+        jsonButton = Button(self.mainView, text='done', command=self.createJson)
+        jsonButton.place(relx=0.9, rely=0.025, anchor='center')
     
 
     def prev(self, *args):
@@ -99,7 +103,8 @@ class createWindow:
 
 
     def onRelease(self, event):
-        self.box = self.canvas.create_rectangle(lastx, lasty, endx, endy, width=3, outline='blue')  
+        self.box = self.canvas.create_rectangle(lastx, lasty, endx, endy, width=3, outline='blue')
+        self.canvas.coords(self.highlight, 0, 0, 0, 0)
         print(f'Released! x: {endx}, y: {endy}')
 
     def browseFolder(self, *args):
@@ -121,7 +126,30 @@ class createWindow:
     
     def confrim(self, *args):
         self.canvas.delete(self.box)
-        print('confirmed!')
+        #print(f'confirmed! lastX: {lastx}, lastY: {lasty}, x: {endx}, y: {endy}')
+        self.savedAnnots.update({self.imageName[self.imageIndex] : [lastx,lasty,endx,endy]})
+        self.next()
+        print(self.savedAnnots)
+
+    def createJson(self, *args):
+        data = []
+        for key in self.savedAnnots:
+            data.append({
+                "image" : key,
+                    "annoatations" : [{"label" : "button",
+                        "coordinates" : {
+                            "x": self.savedAnnots[key][0],
+                            "y": self.savedAnnots[key][1],
+                            "width": self.savedAnnots[key][2] - self.savedAnnots[key][0],
+                            "height": self.savedAnnots[key][3] - self.savedAnnots[key][1]
+                        }
+                    }]
+            })
+        formattedData = js.dumps(data, indent=2)
+        print(formattedData)
+        with open ("ImageAnnoations.json", 'w') as write:
+            write.write(formattedData)
+
 
             
 # call the class to draw an empty window on execution of script
