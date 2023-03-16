@@ -90,13 +90,13 @@ class createWindow:
         self.drawImage()
         self.canvas.bind("<Button-1>", self.onClick)
         labelText = Label(self.mainView, text='Enter Label Name Below', font=('Calibri', 20))
-        labelText.place(relx=0.5, rely=0.82, anchor='center')
+        labelText.place(relx=0.5, rely=0.80, anchor='center')
         self.inputField = Text(self.mainView, width=12, height=1, font=('Calibri', 14))
-        self.inputField.place(relx=0.5, rely=0.88, anchor='center')
-        self.labelPreview = Label(self.mainView, text=f'', font=('Calibri', 20), background='white')
-        self.labelPreview.place(relx=0.5, rely=0.1, anchor='center')
+        self.inputField.place(relx=0.5, rely=0.85, anchor='center')
+        self.labelPreview = Label(self.mainView, text=f'', font=('Calibri', 12))
+        self.labelPreview.place(relx=0.5, rely=0.9, anchor='center')
         labelButton = Button(self.mainView, text='ok', font=('Calibri', 10), command=self.confirmLabel)
-        labelButton.place(relx=0.65, rely=0.88, anchor='center')
+        labelButton.place(relx=0.65, rely=0.85, anchor='center')
 
     def confirmLabel(self, *args):
         self.Imagelabel = self.inputField.get(1.0, END)
@@ -134,7 +134,8 @@ class createWindow:
     def onRelease(self, event):
         self.box = self.canvas.create_rectangle(lastx, lasty, endx, endy, width=3, outline='blue')
         self.canvas.coords(self.highlight, 0, 0, 0, 0)
-        print(f'Released! x: {endx}, y: {endy}')
+        print(f'Released! lastx: {lastx},lasty: {lasty} ,x: {endx}, y: {endy}')
+        self.centerX, self.centerY = ((endx+lastx)/2), ((endy+lasty)/2)
 
     def browseFolder(self, *args):
         # Ask user for file path, then grab all ".png"/".jpg" extensions and place into an array
@@ -167,11 +168,11 @@ class createWindow:
                 "imagefilename" : key,
                     "annoatation" : 
                     [
-                        {"label" : self.Imagelabel,
+                        {"label" : self.Imagelabel[:-1],
                         "coordinates" : 
                         {
-                            "y": self.savedAnnots[key][1],
-                            "x": self.savedAnnots[key][0],
+                            "y": self.centerY,
+                            "x": self.centerX,
                             "height": self.savedAnnots[key][3] - self.savedAnnots[key][1],
                             "width": self.savedAnnots[key][2] - self.savedAnnots[key][0] 
                         }
